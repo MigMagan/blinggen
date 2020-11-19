@@ -160,24 +160,24 @@ def CreateMirrors(Comp, N, substhick=1):
                            0], Surf)
             snum = snum+10-snum%10
         if Comp.w1 == Comp.w2:
-            snum = AddSurf("PY", snum, N, w1/2, Surf)
-            snum = AddSurf("PY", snum, N, w1/2+t[2], Surf)
-            snum = AddSurf("PY", snum, N, w1/2+t[2]+substhick, Surf)
-            snum = snum+10-snum%10
             snum = AddSurf("PY", snum, N, -w1/2, Surf)
-            snum = AddSurf("PY", snum, N, -w1/2-t[3], Surf)
-            snum = AddSurf("PY", snum, N, -w1/2-t[3]-substhick, Surf)
+            snum = AddSurf("PY", snum, N, -(w1/2+t[2]), Surf)
+            snum = AddSurf("PY", snum, N, -(w1/2+t[2]+substhick), Surf)
+            snum = snum+10-snum%10
+            snum = AddSurf("PY", snum, N, w1/2, Surf)
+            snum = AddSurf("PY", snum, N, w1/2+t[3], Surf)
+            snum = AddSurf("PY", snum, N, w1/2+t[3]+substhick, Surf)
             snum = snum+10-snum%10
         else: 
             alpha = atan((Comp.h2-Comp.h1)/(2*l))
-            snum = AddSurf("P", snum, N, [0, 0, w1/2, -sin(alpha), cos(alpha), 0], Surf)
-            snum = AddSurf("P", snum, N, [0, 0, w1/2+t[0], -sin(alpha), cos(alpha), 0], Surf)
-            snum = AddSurf("P", snum, N, [0, 0, w1/2+t[0]+substhick, -sin(alpha),  
+            snum = AddSurf("P", snum, N, [0, 0, -w1/2, sin(alpha), cos(alpha), 0], Surf)
+            snum = AddSurf("P", snum, N, [0, 0, -(w1/2+t[0]), sin(alpha), cos(alpha), 0], Surf)
+            snum = AddSurf("P", snum, N, [0, 0, -(w1/2+t[0]+substhick), sin(alpha),  
                            cos(alpha), 0], Surf)
             snum = snum+10-snum%10
-            snum = AddSurf("P", snum, N, [0, 0, -w1/2, sin(alpha), cos(alpha), 0], Surf)
-            snum = AddSurf("P", snum, N, [0, 0, -w1/2+t[0], sin(alpha), cos(alpha), 0], Surf)
-            snum = AddSurf("P", snum, N, [0, 0, -w1/2+t[0]+substhick, sin(alpha), cos(alpha),
+            snum = AddSurf("P", snum, N, [0, 0, w1/2, -sin(alpha), cos(alpha), 0], Surf)
+            snum = AddSurf("P", snum, N, [0, 0, w1/2+t[0], -sin(alpha), cos(alpha), 0], Surf)
+            snum = AddSurf("P", snum, N, [0, 0, w1/2+t[0]+substhick, -sin(alpha), cos(alpha),
                            0], Surf)
 
     elif Comp.type.strip() in ["Elliptic_guide_gravity", "Elliptic_Guide"]:  #Elliptical guide
