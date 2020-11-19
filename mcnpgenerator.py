@@ -61,11 +61,11 @@ def AddSurf(Type, N, TR, params, Slist):
         Slist.append("{0} {1} {2} {3} {4} {5} {6} {7} {8}".format(N,TR,Type,params[0],params[1],params[2],
         params[3],params[4],params[5]))    
     elif Type in ["SQ"]:
-        Slist.append("{0} {1} {2} {3} {4} {5} {6} {7} {8}".format(N, TR, Type, 
+        Slist.append("{0} {1} {2} {3} {4} {5} {6} {7}".format(N, TR, Type, 
                      params[0], params[1], params[2], params[3], params[4]))
         
-        Slist.append("      {0} {1} {2} {3} {4} {5}".format(params[5], params[6], 
-                     params[7], params[8], params[9], params[10]))
+        Slist.append("      {0} {1} {2} {3} {4}".format(params[5], params[6], 
+                     params[7], params[8], params[9]))
     else:
         print("Unknown or unimplemented surface type")
         return N
