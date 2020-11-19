@@ -408,4 +408,25 @@ def createreflecards(Comp, N, RFLAG=2):
         cards.append("REFLE{0} {1} {2} -{3}".format(cardn, surfn, mn, celln))
         cards.append("RFLAG{0} {1}".format(cardn, RFLAG))
     return cards
+
+def createreffcard(m, **kwargs):
+    """
+    Write the relevant REFLE cards for MCNP. Detailed transport is assumed 
+    in the equations by default. Use **kwargs to override this default. Possible
+    kwargs:
+    moffset: m offset over nominal (Default:0.1)
+    W: Width of supermirror cutoff.( Default 0.5)
+    AA: Slope of reflectivity. Default (2E-3)
+    R0: Low angle reflectivity (Default 0.99)
+    Qc: Critical scattering vector. (Default 0.0215)
+    """
+    moffset = 0.1 if "moffset" not in kwargs.items() else kwargs.moffset
+    W = 0.5 if "W" not in kwargs.items() else kwargs.W
+    AA = 2E-3 if "AA" not in kwargs.items() else kwargs.AA
+    R0 = 0.99 if "R0" not in kwargs.items() else kwargs.R0
+    Qc = 0.215 if "Qc" not in kwargs.items() else kwargs.Qc
     
+    ncard = int(10*m)
+    m = m+moffset  # Yes, m declared is higher than nominal. This is by design
+    line = "REFF{0}  {1}  {2}  {3}  {4}  {5}".format(ncard, R0, Qc, m, AA, W)
+    return line
