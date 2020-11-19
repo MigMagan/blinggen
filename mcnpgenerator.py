@@ -73,7 +73,7 @@ def AddSurf(Type, N, TR, params, Slist):
     return N
 
 
-def AddCell (N, Mat, Ro, InSurf, ExSurf, Clist, IMP=1):
+def addcell (N, Mat, Ro, InSurf, ExSurf, Clist, IMP=1):
     """
     Adds a cell number N of Material Mat with density Ro to Clist. Surfaces indicated by InSurf 
     and ExSurf array/list, in the form (InSurf[0] InSurf[1]...InSurf[n] (ExSurf[0]:ExSurf[1]..ExSurf[n])
@@ -105,7 +105,7 @@ def AddCell (N, Mat, Ro, InSurf, ExSurf, Clist, IMP=1):
     N+=1
     return N
 
-def CreateMirrors(Comp, N, substhick=1):
+def createguidesurfs(Comp, N, substhick=1):
     """Create and return the surface cards for the mirrors of component Comp. 
        N is the number of component, used for surface and TR numbering"""
     # Coating thickness dictionary. 
@@ -380,7 +380,7 @@ def createguidecells(Comp, N):
     return CList
        
 
-def writeTR (Comp, N):
+def createTR (Comp, N):
     """Write the TR card of component Comp."""
     TR = Comp.rot[0]
     TRcard = ["TR{0} {1} {2} {3}".format(N, 100*Comp.pos.x, 100*Comp.pos.y, 100*Comp.pos.z)]
@@ -389,7 +389,7 @@ def writeTR (Comp, N):
     return TRcard
 
 
-def createrefcards(Comp, N, RFLAG=2):
+def createreflecards(Comp, N, RFLAG=2):
     """Write the reflection cards for Comp, number N, with RFLAGS"""
     cards = ["C =============== Section {0}================".format(N)]
     celln = 100*N
