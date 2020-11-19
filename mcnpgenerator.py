@@ -61,11 +61,11 @@ def AddSurf(Type, N, TR, params, Slist):
         Slist.append("{0} {1} {2} {3} {4} {5} {6} {7} {8}".format(N,TR,Type,params[0],params[1],params[2],
         params[3],params[4],params[5]))    
     elif Type in ["REC"]:
-        Slist.append("{0} {1} {2} {3} {4} {5} {6} {7} {8}\n".format(N, TR, Type, 
+        Slist.append("{0} {1} {2} {3} {4} {5} {6} {7} {8}".format(N, TR, Type, 
                      params[0][0], params[0][1], params[0][2],
                      params[1][0], params[1][1], params[1][2])),
         
-        Slist.append("      {0} {1} {2} {3} {4} {5}\n".format( 
+        Slist.append("      {0} {1} {2} {3} {4} {5}".format( 
                      params[2][0], params[2][1], params[2][2],
                      params[3][0], params[3][1], params[3][2])),
     else:
