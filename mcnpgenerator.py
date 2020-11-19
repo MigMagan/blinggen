@@ -374,3 +374,24 @@ def writeTR (Comp, N):
         TRcard.append("      {0} {1} {2}".format(TR[j][0], TR[j][1], TR[j][2]))
     return TRcard
 
+
+def createrefcards(Comp, N, RFLAG=2):
+    """Write the reflection cards for Comp, number N, with RFLAGS"""
+    cards = ["C =============== Section {0}================".format(N)]
+    celln = 100*N
+    if hasattr(Comp, "m"):
+        m = [Comp.m]*4
+    else:
+        m = [Comp.mtop, Comp.mbottom, Comp.mleft, Comp.mright]
+    if Comp.type.strip() in ["Elliptic_guide_gravity", "Elliptic_guide"]:
+        srange = range(1, 5, 2)
+    elif Comp.type.strip() in ["Guide_gravity", "Guide", "Guide_gravity_polar"]:
+        srange = range(1, 5)
+    for i in srange:
+        cardn = 100*N + i
+        surfn = 100*N + 10*i
+        mn = int(10*m[i-1])  # Notice that m should not have more than 1 decimal
+        cards.append("REFLE{0} {1} {2} -{3}".format(cardn, surfn, mn, celln))
+        cards.append("RFLAG{0} {1}".format(cardn, RFLAG))
+    return cards
+    
