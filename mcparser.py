@@ -89,7 +89,7 @@ def parseROT(McStas_ROT, varlib={}):
     Uz = rotang.Uz*pi/180
     # Define the rotation matrixes and multiply
     rotx = np.array([[1, 0, 0], [0, cos(Ux), -sin(Ux)], [0, sin(Ux), cos(Ux)]])
-    roty = np.array([[cos(Uy), 0, sin(Uy)], [0, 1, 0], [-sin(Uy), 0, cos(Uy)]])
+    roty = np.array([[cos(Uy), 0, -sin(Uy)], [0, 1, 0], [sin(Uy), 0, cos(Uy)]])
     rotz = np.array([[cos(Uz), sin(Uz), 0], [-sin(Uz), cos(Uz), 0], [0, 0, 1]])
     rot = np.matmul(rotx, roty)
     rot = np.matmul(rot, rotz)
@@ -324,7 +324,7 @@ def composepos(pos, ref):
         print("Can not position an instrument with not oriented reference")
         return pos
     location = namedtuple("location", "x y z reference")
-    TR = ref.rot[0]
+    TR = np.linalg.inv(ref.rot[0])
 
     x = ref.pos.x + pos.x*TR[0][0]+pos.y*TR[0][1]+pos.z*TR[0][2]
     y = ref.pos.y + pos.x*TR[1][0]+pos.y*TR[1][1]+pos.z*TR[1][2]
