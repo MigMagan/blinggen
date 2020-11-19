@@ -216,6 +216,7 @@ def CreateMirrors(Comp, N, substhick=1):
                                         [0, yell["minor"]+t[0]+substhick, 0]], Surf)
         snum = snum+10-snum%10
         snum+=10
+    snum = AddSurf("C/X", snum, N, [0,0,10], Surf)   #Housing
     snum = AddSurf("C/X", snum, N, [0,0,10.5], Surf)   #Housing
     snum = snum +10 - snum%10  
     snum = AddSurf("PX", snum, N, l, Surf)
