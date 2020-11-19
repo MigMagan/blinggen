@@ -196,22 +196,37 @@ def CreateMirrors(Comp, N, substhick=1):
             posz = (z1+z2)/2
         else:
             raise Exception("Unknown definition of dimensionsAt for {0}\n".format(Comp.name))
-        yell = calc_ellipse(y1, y2, z, posz)
-        zell = calc_ellipse(z1, z2, y, posy)
-        snum = AddSurf("REC", snum, N, [[(z1+z2)/2, 0, 0], [0, 1, 0], [zell["major"], 0, 0],
-                                        [0, 0, zell["minor"]]], Surf)
-        snum = AddSurf("REC", snum, N, [[(z1+z2)/2, 0, 0], [0, 1, 0], [zell["major"], 0, 0],
-                                        [0, 0, zell["minor"]+t[0]]], Surf)
-        snum = AddSurf("REC", snum, N, [[(z1+z2)/2, 0, 0], [0, 1, 0], [zell["major"], 0, 0],
-                                        [0, 0, zell["minor"]+t[0]+substhick]], Surf)
+        yell = calc_ellipse(y1, y2, z/2, posz)
+        zell = calc_ellipse(z1, z2, y/2, posy)
+        sqa = zell["minor"]**2
+        sqc = zell["major"]**2
+        sqg = - sqa * sqc
+        sqx = zell["center"]
+        snum = AddSurf("SQ", snum, N, [sqa, 0, sqc, 0, 0, 0, sqg, sqx, 0, 0], Surf)
+        sqa = (zell["minor"] + t[0])**2
+        sqc = (zell["major"] + t[0])**2
+        sqg = - sqa * sqc
+        snum = AddSurf("SQ", snum, N, [sqa, 0, sqc, 0, 0, 0, sqg, sqx, 0, 0], Surf)
+        sqa = (zell["minor"] + t[0] + substhick)**2
+        sqc = (zell["major"] + t[0] + substhick)**2
+        sqg = - sqa * sqc
+        snum = AddSurf("SQ", snum, N, [sqa, 0, sqc, 0, 0, 0, sqg, sqx, 0, 0], Surf)
         snum = snum+10-snum%10
         snum+=10
-        snum = AddSurf("REC", snum, N, [[(y1+y2)/2, 0, 0], [0, 0, 1], [yell["major"], 0, 0],
-                                        [0, yell["minor"], 0]], Surf)
-        snum = AddSurf("REC", snum, N, [[(y1+y2)/2, 0, 0], [0, 0, 1], [yell["major"], 0, 0], 
-                                        [0, yell["minor"]+t[0], 0]], Surf)
-        snum = AddSurf("REC", snum, N, [[(y1+y2)/2, 0, 0], [0, 0, 1], [yell["major"], 0, 0],
-                                        [0, yell["minor"]+t[0]+substhick, 0]], Surf)
+        
+        sqa = yell["minor"]**2
+        sqb = yell["major"]**2
+        sqg = - sqa * sqb
+        sqx = zell["center"]
+        snum = AddSurf("SQ", snum, N, [sqa, sqb, 0, 0, 0, 0, sqg, sqx, 0, 0], Surf)
+        sqa = (yell["minor"] + t[0])**2
+        sqb = (yell["major"] + t[0])**2
+        sqg = - sqa * sqb
+        snum = AddSurf("SQ", snum, N, [sqa, sqb, 0, 0, 0, 0, sqg, sqx, 0, 0], Surf)
+        sqa = (yell["minor"] + t[2] + substhick)**2
+        sqb = (yell["major"] + t[2] + substhick)**2
+        sqg = - sqa * sqb
+        snum = AddSurf("SQ", snum, N, [sqa, sqb, 0, 0, 0, 0, sqg, sqx, 0, 0], Surf)
         snum = snum+10-snum%10
         snum+=10
     snum = AddSurf("C/X", snum, N, [0,0,10], Surf)   #Housing
