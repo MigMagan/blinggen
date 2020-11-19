@@ -36,7 +36,7 @@ def AddSurf(Type, N, TR, params, Slist):
     PX,PY,PZ: The obvious
     P: Params: Point and normal 
     C/X, C/Y, C/Z: Params are the Origin and radius (like MCNP card)
-    REC: [Vx, Yy, Vz], [Hx, Hy, Hz], ], [V1x, V1y, V1z], [V2x, V2y, V2z]
+    SQ: A B C D E F G, X0, Y0, Z0. (Like MCNP Card) 
     """
     if Type in ["PX","PY","PZ"]:
         Slist.append("{0} {1} {2} {3}".format(N,TR,Type,params)) 
@@ -60,14 +60,12 @@ def AddSurf(Type, N, TR, params, Slist):
             return N
         Slist.append("{0} {1} {2} {3} {4} {5} {6} {7} {8}".format(N,TR,Type,params[0],params[1],params[2],
         params[3],params[4],params[5]))    
-    elif Type in ["REC"]:
+    elif Type in ["SQ"]:
         Slist.append("{0} {1} {2} {3} {4} {5} {6} {7} {8}".format(N, TR, Type, 
-                     params[0][0], params[0][1], params[0][2],
-                     params[1][0], params[1][1], params[1][2])),
+                     params[0], params[1], params[2], params[3], params[4]))
         
-        Slist.append("      {0} {1} {2} {3} {4} {5}".format( 
-                     params[2][0], params[2][1], params[2][2],
-                     params[3][0], params[3][1], params[3][2])),
+        Slist.append("      {0} {1} {2} {3} {4} {5}".format(params[5], params[6], 
+                     params[7], params[8], params[9], params[10]))
     else:
         print("Unknown or unimplemented surface type")
         return N
