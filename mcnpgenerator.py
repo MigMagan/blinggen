@@ -369,8 +369,8 @@ def createguidecells(Comp, N):
 def writeTR (Comp, N):
     """Write the TR card of component Comp."""
     TR = Comp.rot[0]
-    TRcard = "TR{0} {1} {2} {3}\n".format(N, Comp.pos.x, Comp.pos.y, Comp.pos.z)
+    TRcard = ["TR{0} {1} {2} {3}".format(N, 100*Comp.pos.x, 100*Comp.pos.y, 100*Comp.pos.z)]
     for j in range(0,3):
-        TRcard = TRcard + "      {0} {1} {2}\n".format(TR[j][0], TR[j][1], TR[j][2])
+        TRcard.append("      {0} {1} {2}".format(TR[j][0], TR[j][1], TR[j][2]))
     return TRcard
 
