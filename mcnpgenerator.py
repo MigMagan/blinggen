@@ -334,7 +334,7 @@ def createguidecells(Comp, N):
     SPrefix = 100*N
     CNum = 100*N
     CList = []
-    if Comp.type.strip() in ["Guide_gravity", "Guide"]:
+    if Comp.type.strip() in ["Guide_gravity", "Guide", "Guide_gravity_polar"]:
         I0 = [SPrefix, -(SPrefix+10), SPrefix+20, SPrefix+30, -(SPrefix+40), -(SPrefix+60)] 
         I1 = [SPrefix, -(SPrefix+11), SPrefix+21, SPrefix+31, -(SPrefix+41), -(SPrefix+60)] 
         I2 = [SPrefix, -(SPrefix+12), SPrefix+22, SPrefix+32, -(SPrefix+42), -(SPrefix+60)] 
