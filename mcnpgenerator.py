@@ -370,13 +370,13 @@ def createguidecells(Comp, N):
         E3 = [SPrefix+12, SPrefix+32] 
         E4 = []
 
-    CNum = AddCell(CNum,0,0,I0,E0,CList)  # Void inside guide
-    CNum = AddCell(CNum,Coat_Mat,Coat_Ro,I1,E1,CList)  # Coating
-    CNum = AddCell(CNum,Subs_Mat,Subs_Ro,I2,E2,CList)  # Substrate
-    CNum = AddCell(CNum,0,0,I3,E3,CList)  # Void outside
-    CNum = AddCell(CNum,Hous_Mat,Hous_Ro,I4,E4,CList)  # Housing
+    CNum = addcell(CNum,0,0,I0,E0,CList)  # Void inside guide
+    CNum = addcell(CNum,Coat_Mat,Coat_Ro,I1,E1,CList)  # Coating
+    CNum = addcell(CNum,Subs_Mat,Subs_Ro,I2,E2,CList)  # Substrate
+    CNum = addcell(CNum,0,0,I3,E3,CList)  # Void outside
+    CNum = addcell(CNum,Hous_Mat,Hous_Ro,I4,E4,CList)  # Housing
     CNum= 100*N + 99
-    Cnum= AddCell(CNum, 0, 0, [SPrefix, -(SPrefix+60), SPrefix+51], [], CList, IMP=0) # Outside
+    Cnum= addcell(CNum, 0, 0, [SPrefix, -(SPrefix+60), SPrefix+51], [], CList, IMP=0) # Outside
     return CList
        
 
