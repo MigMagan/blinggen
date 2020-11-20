@@ -430,3 +430,28 @@ def createreffcard(m, **kwargs):
     m = m+moffset  # Yes, m declared is higher than nominal. This is by design
     line = "REFF{0}  {1}  {2}  {3}  {4}  {5}".format(ncard, R0, Qc, m, AA, W)
     return line
+
+
+def createfiller(i1, i2):
+    """ Create a filler cell between non-consecutive components, i1, and i2.
+    If the components are actually consecutive, returns None. Notice that even if the
+    components are overlapping, the surfaces are duplicated, and thus SHOULD be
+    safe to use""" 
+    if i1 + 1 == i2:
+        return None, None
+    snum = 100*i1 + 150 
+    cnum = 100*i1 + 100
+    N = i1 + 1
+    slist = []
+    clist = []
+    snum = AddSurf("C/X", snum, N, [0,0,10.5], slist)   #Housing
+    I0 = [-(snum-1), 100*i1+60, -100*i2]
+    I1 = [100*i1+60, -100*i2]
+    E0 = []
+    E1 = [snum-1]
+    cnum = addcell(cnum, 0, 0, I0, E0, clist)  # Void inside guide
+    cnum = addcell(cnum, 0, 0, I1, E1, clist)  # Graveyard
+    return slist, clist
+
+
+
