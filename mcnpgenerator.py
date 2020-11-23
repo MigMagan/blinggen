@@ -331,11 +331,11 @@ def createguidecells(Comp, N):
     S_Mat=3
     C_Mat=4
     W_Mat=5
-    Coat_Ro=-6.45
-    Subs_Ro=-2.3 # TODO: Yeah, I just made up the numbers. Fix. 
+    Coat_Ro=-7.15
+    Subs_Ro=-2.5 # TODO: Yeah, I just made up the numbers. Fix. 
     Hous_Ro=-7.8
     S_Ro=-7.8
-    C_Ro=-2.5
+    C_Ro=-2.3 
     W_Ro=-2.3
     BB=BoundBox(150,250,150,150)
 #    I=[B.rsplit()[0] for B in BB] #Global bounding box
