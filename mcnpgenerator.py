@@ -8,7 +8,7 @@ from array import array
 from collections import namedtuple
 import itertools
 import pycparser
-
+import geocell
 
 def BoundBox(Up, Down, Left, Right):
     S=[]
@@ -203,32 +203,30 @@ def createguidesurfs(Comp, N, substhick=1):
         sqg = - sqa * sqc
         sqx = zell["center"]
         snum = AddSurf("SQ", snum, N, [sqa, 0, sqc, 0, 0, 0, sqg, sqx, 0, 0], Surf)
-        sqa = (zell["minor"] + t[0])**2
-        sqc = (zell["major"] + t[0])**2
-        sqg = - sqa * sqc
-        snum = AddSurf("SQ", snum, N, [sqa, 0, sqc, 0, 0, 0, sqg, sqx, 0, 0], Surf)
-        sqa = (zell["minor"] + t[0] + substhick)**2
-        sqc = (zell["major"] + t[0] + substhick)**2
-        sqg = - sqa * sqc
-        snum = AddSurf("SQ", snum, N, [sqa, 0, sqc, 0, 0, 0, sqg, sqx, 0, 0], Surf)
+        snum = AddSurf("SQ", snum, N, [sqa, 0, sqc, 0, 0, 0, sqg, sqx, 0, -t[0]], Surf)
+        snum = AddSurf("SQ", snum, N, [sqa, 0, sqc, 0, 0, 0, sqg, sqx, 0, substhick], Surf)
+        snum = AddSurf("PZ", snum, N, substhick, Surf)
         snum = snum+10-snum%10
-        snum+=10
+        snum+=1
+        snum = AddSurf("SQ", snum, N, [sqa, 0, sqc, 0, 0, 0, sqg, sqx, 0, t[0]], Surf)
+        snum = AddSurf("SQ", snum, N, [sqa, 0, sqc, 0, 0, 0, sqg, sqx, 0, -substhick], Surf)
+        snum = AddSurf("PZ", snum, N, -substhick, Surf)
+        snum = snum+10-snum%10
         
         sqa = yell["minor"]**2
         sqb = yell["major"]**2
         sqg = - sqa * sqb
         sqx = zell["center"]
         snum = AddSurf("SQ", snum, N, [sqa, sqb, 0, 0, 0, 0, sqg, sqx, 0, 0], Surf)
-        sqa = (yell["minor"] + t[0])**2
-        sqb = (yell["major"] + t[0])**2
-        sqg = - sqa * sqb
-        snum = AddSurf("SQ", snum, N, [sqa, sqb, 0, 0, 0, 0, sqg, sqx, 0, 0], Surf)
-        sqa = (yell["minor"] + t[2] + substhick)**2
-        sqb = (yell["major"] + t[2] + substhick)**2
-        sqg = - sqa * sqb
-        snum = AddSurf("SQ", snum, N, [sqa, sqb, 0, 0, 0, 0, sqg, sqx, 0, 0], Surf)
+        snum = AddSurf("SQ", snum, N, [sqa, sqb, 0, 0, 0, 0, sqg, sqx, t[0], 0], Surf)
+        snum = AddSurf("SQ", snum, N, [sqa, sqb, 0, 0, 0, 0, sqg, sqx, -substhick, 0], Surf)
+        snum = AddSurf("PY", snum, N, -substhick, Surf)
         snum = snum+10-snum%10
-        snum+=10
+        snum+=1
+        snum = AddSurf("SQ", snum, N, [sqa, sqb, 0, 0, 0, 0, sqg, sqx, -t[0], 0], Surf)
+        snum = AddSurf("SQ", snum, N, [sqa, sqb, 0, 0, 0, 0, sqg, sqx, substhick, 0], Surf)
+        snum = AddSurf("PY", snum, N, substhick, Surf)
+        snum = snum+10-snum%10
     snum = AddSurf("C/X", snum, N, [0,0,10], Surf)   #Housing
     snum = AddSurf("C/X", snum, N, [0,0,10.5], Surf)   #Housing
     snum = snum +10 - snum%10  
@@ -358,25 +356,45 @@ def createguidecells(Comp, N):
         E2 = [SPrefix+11, -(SPrefix+21), -(SPrefix+31), SPrefix+41] 
         E3 = [SPrefix+12, -(SPrefix+22), -(SPrefix+32), SPrefix+42] 
         E4 = []
+        CNum = addcell(CNum,0,0,I0,E0,CList)  # Void inside guide
+        CNum = addcell(CNum,Coat_Mat,Coat_Ro,I1,E1,CList)  # Coating
+        CNum = addcell(CNum,Subs_Mat,Subs_Ro,I2,E2,CList)  # Substrate
+        CNum = addcell(CNum,0,0,I3,E3,CList)  # Void outside
+        CNum = addcell(CNum,Hous_Mat,Hous_Ro,I4,E4,CList)  # Housing
+        CNum= 100*N + 99
+        Cnum= addcell(CNum, 0, 0, [SPrefix, -(SPrefix+60), SPrefix+51], [], CList, IMP=0) # Outside
+ 
     elif Comp.type.strip() in ["Elliptic_guide", "Elliptic_guide_gravity"]:
-        I0 = [SPrefix, -(SPrefix+10), -(SPrefix+30), -(SPrefix+60)] 
-        I1 = [SPrefix, -(SPrefix+11), -(SPrefix+31), -(SPrefix+60)] 
-        I2 = [SPrefix, -(SPrefix+12), -(SPrefix+32), -(SPrefix+60)] 
+        I0 = [SPrefix, -(SPrefix+11), -(SPrefix+21), -(SPrefix+31), -(SPrefix+41), -(SPrefix+60)] 
+        I1 = [SPrefix, -(SPrefix+10), -(SPrefix+30), -(SPrefix+60)] 
+        I2 = [SPrefix, -(SPrefix+60)] 
         I3 = [SPrefix, -(SPrefix+50), -(SPrefix+60)] 
         I4 = [SPrefix, SPrefix+50, -(SPrefix+51), -(SPrefix+60)] 
-        E0 = []
-        E1 = [SPrefix+10, SPrefix+30] 
-        E2 = [SPrefix+11, SPrefix+31] 
-        E3 = [SPrefix+12, SPrefix+32] 
-        E4 = []
-
-    CNum = addcell(CNum,0,0,I0,E0,CList)  # Void inside guide
-    CNum = addcell(CNum,Coat_Mat,Coat_Ro,I1,E1,CList)  # Coating
-    CNum = addcell(CNum,Subs_Mat,Subs_Ro,I2,E2,CList)  # Substrate
-    CNum = addcell(CNum,0,0,I3,E3,CList)  # Void outside
-    CNum = addcell(CNum,Hous_Mat,Hous_Ro,I4,E4,CList)  # Housing
-    CNum= 100*N + 99
-    Cnum= addcell(CNum, 0, 0, [SPrefix, -(SPrefix+60), SPrefix+51], [], CList, IMP=0) # Outside
+        I5 = [SPrefix+12, SPrefix+22]
+        I6 = [SPrefix+32, SPrefix+42]
+        I99 = [SPrefix, SPrefix+51, -(SPrefix+60)]
+        E0 = [SPrefix+11, SPrefix+21, SPrefix+31, SPrefix+41]
+        E1 = [-(SPrefix+12),-(SPrefix+22)]
+        E2 = [-(SPrefix+32),-(SPrefix+42)] 
+        E3 = [SPrefix+10, SPrefix+30] 
+        cell0 = geocell.cell(I0, CNum)
+        cell1 = geocell.cell(I1, CNum+1)*geocell.cell(E0, CNum+1, logic="or")
+        c21 = geocell.cell([-(SPrefix+13), SPrefix+23]) + geocell.cell(E1, logic="or")
+        c22 = geocell.cell([SPrefix+33, -(SPrefix+43)]) + geocell.cell(E2, logic="or")
+        c31 = geocell.cell([SPrefix+12, SPrefix+22]) - geocell.cell([-(SPrefix+13), SPrefix+23])
+        c32 = geocell.cell([SPrefix+32, SPrefix+42]) - geocell.cell([SPrefix+33, -(SPrefix+43)])
+        cell2 = geocell.cell(I2, CNum+2)*c21*c22*geocell.cell(E3, logic="or") 
+        cell3 = geocell.cell(I3, CNum+3) * (c31+c32)
+        cell4 = geocell.cell(I4, CNum+4) 
+        cell99 = geocell.cell(I99, CNum+99) 
+#        print(geocell.mcnpcard(cell0, 0))
+#        print(geocell.mcnpcard(cell1, Coat_Mat, Coat_Ro))
+        CList.append(geocell.mcnpcard(cell0, 0))
+        CList.append(geocell.mcnpcard(cell1, Coat_Mat, Coat_Ro))
+        CList.append(geocell.mcnpcard(cell2, Subs_Mat, Subs_Ro))
+        CList.append(geocell.mcnpcard(cell3, 0))
+        CList.append(geocell.mcnpcard(cell4, Hous_Mat, Hous_Ro))
+        CList.append(geocell.mcnpcard(cell99, 0))
     return CList
        
 
@@ -452,6 +470,3 @@ def createfiller(i1, i2):
     cnum = addcell(cnum, 0, 0, I0, E0, clist)  # Void inside guide
     cnum = addcell(cnum, 0, 0, I1, E1, clist)  # Graveyard
     return slist, clist
-
-
-
