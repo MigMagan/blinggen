@@ -9,6 +9,7 @@ from collections import namedtuple
 import itertools
 import pycparser
 import geocell
+import math 
 
 def BoundBox(Up, Down, Left, Right):
     S=[]
@@ -105,9 +106,10 @@ def addcell (N, Mat, Ro, InSurf, ExSurf, Clist, IMP=1):
     N+=1
     return N
 
-def createguidesurfs(Comp, N, substhick=1):
+def createguidesurfs(Comp, N, substhick=1, length=None, gap=0.2):
     """Create and return the surface cards for the mirrors of component Comp. 
-       N is the number of component, used for surface and TR numbering"""
+       N is the number of component, used for surface and TR numbering. Optionally, parameter 
+       length describes segment length"""
     # Coating thickness dictionary. 
     coat_thick=	{
         1.5: 7E-5,
@@ -230,7 +232,16 @@ def createguidesurfs(Comp, N, substhick=1):
     snum = AddSurf("C/X", snum, N, [0,0,10], Surf)   #Housing
     snum = AddSurf("C/X", snum, N, [0,0,10.5], Surf)   #Housing
     snum = snum +10 - snum%10  
-    snum = AddSurf("PX", snum, N, l, Surf)
+    if length == None:
+        snum = AddSurf("PX", snum, N, l, Surf)
+    else:
+        nseg = math.ceil(l // length)
+        for n in range(nseg-1):
+            snum = AddSurf("PX", snum, N, (n+1)*length + n*gap, Surf)
+            snum = AddSurf("PX", snum, N, (n+1)*length + (n+1)*gap, Surf)
+        # Final element must match total comp.l so it may not be length long
+        snum = AddSurf("PX", snum, N, l-gap, Surf)
+        snum = AddSurf("PX", snum, N, l, Surf)
     return Surf
 
 
@@ -319,21 +330,21 @@ def CreateShieldSurf(Transforms,SThick,CThick,radius,FLen,Sections):
                 Snum=AddSurf("C/Z",Snum,TRN,[0,R,R-83.5-CThick[i]],Surf)
     return Surf 
 
-def createguidecells(Comp, N):
+def createguidecells(Comp, N, nsegs=1):
     """
     Creates the guide cells for Component Comp. N is the corresponding number, used
-    for cell numbering"""
+    for cell numbering, and nsegs is the number of guide segments"""
     Coat_Mat=1
     Subs_Mat=2 # Constants for material definition. Kinda hackish but I don't think these need change often?
     Hous_Mat=3
     S_Mat=3
     C_Mat=4
     W_Mat=5
-    Coat_Ro=-7.15
-    Subs_Ro=-2.5 # TODO: Yeah, I just made up the numbers. Fix. 
+    Coat_Ro=-6.45
+    Subs_Ro=-2.3 # TODO: Yeah, I just made up the numbers. Fix. 
     Hous_Ro=-7.8
     S_Ro=-7.8
-    C_Ro=-2.3 
+    C_Ro=-2.5
     W_Ro=-2.3
     BB=BoundBox(150,250,150,150)
 #    I=[B.rsplit()[0] for B in BB] #Global bounding box
@@ -345,53 +356,79 @@ def createguidecells(Comp, N):
     SPrefix = 100*N
     CNum = 100*N
     CList = []
+    X0 = [100*N+61 + 2*i for i in range(nsegs)]
+    X0.insert(0, 100*N)
+    X1 = [100*N+60 + 2*i for i in range(nsegs)]
     if Comp.type.strip() in ["Guide_gravity", "Guide", "Guide_gravity_polar"]:
-        I0 = [SPrefix, -(SPrefix+10), SPrefix+20, SPrefix+30, -(SPrefix+40), -(SPrefix+60)] 
-        I1 = [SPrefix, -(SPrefix+11), SPrefix+21, SPrefix+31, -(SPrefix+41), -(SPrefix+60)] 
-        I2 = [SPrefix, -(SPrefix+12), SPrefix+22, SPrefix+32, -(SPrefix+42), -(SPrefix+60)] 
-        I3 = [SPrefix, -(SPrefix+50), -(SPrefix+60)] 
-        I4 = [SPrefix, SPrefix+50, -(SPrefix+51), -(SPrefix+60)] 
-        E0 = []
-        E1 = [SPrefix+10, -(SPrefix+20), -(SPrefix+30), SPrefix+40] 
-        E2 = [SPrefix+11, -(SPrefix+21), -(SPrefix+31), SPrefix+41] 
+        for i in range(nsegs):
+            I0 = [X0[i], -(SPrefix+10), SPrefix+20, SPrefix+30, -(SPrefix+40), -X1[i]]
+            CNum = addcell(CNum,0,0,I0,[],CList)  # Void inside guide
+        CNum = CNum+10 -CNum%10
+        for i in range(nsegs):
+            I = [X1[i], -(SPrefix+12), SPrefix+22, SPrefix+32, -(SPrefix+42), -X0[i+1]] 
+            CNum = addcell(CNum, 0 , 0, I, [], CList)  # Gap
+        CNum = CNum+10 -CNum%10
+        for i in range(nsegs):
+            I1 = [X0[i], -(SPrefix+11), SPrefix+21, SPrefix+31, -(SPrefix+41), -X1[i]] 
+            E1 = [SPrefix+10, -(SPrefix+20), -(SPrefix+30), SPrefix+40] 
+            CNum = addcell(CNum,Coat_Mat,Coat_Ro,I1,E1,CList)  # Coating
+        CNum = CNum+10 -CNum%10
+        for i in range(nsegs):
+            I2 = [X0[i], -(SPrefix+12), SPrefix+22, SPrefix+32, -(SPrefix+42), -X1[i]] 
+            E2 = [SPrefix+11, -(SPrefix+21), -(SPrefix+31), SPrefix+41] 
+            CNum = addcell(CNum,Subs_Mat,Subs_Ro,I2,E2,CList)  # Substrate
+        CNum = CNum+10 -CNum%10
+        I3 = [X0[0], -(SPrefix+50), -X0[-1]] 
+        I4 = [X0[0], SPrefix+50, -(SPrefix+51), -X0[-1]] 
         E3 = [SPrefix+12, -(SPrefix+22), -(SPrefix+32), SPrefix+42] 
         E4 = []
-        CNum = addcell(CNum,0,0,I0,E0,CList)  # Void inside guide
-        CNum = addcell(CNum,Coat_Mat,Coat_Ro,I1,E1,CList)  # Coating
-        CNum = addcell(CNum,Subs_Mat,Subs_Ro,I2,E2,CList)  # Substrate
+
         CNum = addcell(CNum,0,0,I3,E3,CList)  # Void outside
         CNum = addcell(CNum,Hous_Mat,Hous_Ro,I4,E4,CList)  # Housing
         CNum= 100*N + 99
-        Cnum= addcell(CNum, 0, 0, [SPrefix, -(SPrefix+60), SPrefix+51], [], CList, IMP=0) # Outside
+        Cnum= addcell(CNum, 0, 0, [X0[0], -X0[-1], SPrefix+51], [], CList, IMP=0) # Outside
  
     elif Comp.type.strip() in ["Elliptic_guide", "Elliptic_guide_gravity"]:
-        I0 = [SPrefix, -(SPrefix+11), -(SPrefix+21), -(SPrefix+31), -(SPrefix+41), -(SPrefix+60)] 
-        I1 = [SPrefix, -(SPrefix+10), -(SPrefix+30), -(SPrefix+60)] 
-        I2 = [SPrefix, -(SPrefix+60)] 
-        I3 = [SPrefix, -(SPrefix+50), -(SPrefix+60)] 
-        I4 = [SPrefix, SPrefix+50, -(SPrefix+51), -(SPrefix+60)] 
-        I5 = [SPrefix+12, SPrefix+22]
-        I6 = [SPrefix+32, SPrefix+42]
-        I99 = [SPrefix, SPrefix+51, -(SPrefix+60)]
-        E0 = [SPrefix+11, SPrefix+21, SPrefix+31, SPrefix+41]
         E1 = [-(SPrefix+12),-(SPrefix+22)]
         E2 = [-(SPrefix+32),-(SPrefix+42)] 
-        E3 = [SPrefix+10, SPrefix+30] 
-        cell0 = geocell.cell(I0, CNum)
-        cell1 = geocell.cell(I1, CNum+1)*geocell.cell(E0, CNum+1, logic="or")
         c21 = geocell.cell([-(SPrefix+13), SPrefix+23]) + geocell.cell(E1, logic="or")
         c22 = geocell.cell([SPrefix+33, -(SPrefix+43)]) + geocell.cell(E2, logic="or")
+        for i in range(nsegs):
+            I0 = [X0[i], SPrefix, -(SPrefix+11), -(SPrefix+21), -(SPrefix+31), -(SPrefix+41), -X1[i]] 
+            cell0 = geocell.cell(I0, CNum)  # Inside guide
+            CList.append(geocell.mcnpcard(cell0, 0))
+            CNum+=1
+        CNum = CNum+10 -CNum%10
+        for i in range(nsegs):
+            I0 = [X1[i], -X0[i+1]] 
+            cell0 = geocell.cell(I0, CNum)* \
+                    geocell.cell(E1, logic="or")*geocell.cell(E2, logic="or")  # Gap
+            CList.append(geocell.mcnpcard(cell0, 0))
+            CNum+=1
+        CNum = CNum+10 -CNum%10
+        for i in range(nsegs):
+            I1 = [X0[i], -(SPrefix+10), -(SPrefix+30), -X1[i]] 
+            E0 = [SPrefix+11, SPrefix+21, SPrefix+31, SPrefix+41]
+            cell1 = geocell.cell(I1, CNum)*geocell.cell(E0, logic="or")
+            CList.append(geocell.mcnpcard(cell1, Coat_Mat, Coat_Ro))
+            CNum+=1
+        CNum = CNum+10 -CNum%10
+        for i in range(nsegs):
+            I2 = [X0[i], -X1[i]] 
+            E3 = [SPrefix+10, SPrefix+30] 
+            cell2 = geocell.cell(I2, CNum)*c21*c22*geocell.cell(E3, logic="or") 
+            CList.append(geocell.mcnpcard(cell2, Subs_Mat, Subs_Ro))
+            CNum+=1
+        CNum = CNum+10 -CNum%10
+        I3 = [X0[0], -(SPrefix+50), -(X0[-1])] 
+        I4 = [X0[0], SPrefix+50, -(SPrefix+51), -(X0[-1])] 
+        I99 = [X0[0], SPrefix+51, -X0[-1]]
         c31 = geocell.cell([SPrefix+12, SPrefix+22]) - geocell.cell([-(SPrefix+13), SPrefix+23])
         c32 = geocell.cell([SPrefix+32, SPrefix+42]) - geocell.cell([SPrefix+33, -(SPrefix+43)])
-        cell2 = geocell.cell(I2, CNum+2)*c21*c22*geocell.cell(E3, logic="or") 
-        cell3 = geocell.cell(I3, CNum+3) * (c31+c32)
-        cell4 = geocell.cell(I4, CNum+4) 
-        cell99 = geocell.cell(I99, CNum+99) 
-#        print(geocell.mcnpcard(cell0, 0))
-#        print(geocell.mcnpcard(cell1, Coat_Mat, Coat_Ro))
-        CList.append(geocell.mcnpcard(cell0, 0))
-        CList.append(geocell.mcnpcard(cell1, Coat_Mat, Coat_Ro))
-        CList.append(geocell.mcnpcard(cell2, Subs_Mat, Subs_Ro))
+        cell3 = geocell.cell(I3, CNum) * (c31+c32)
+        cell4 = geocell.cell(I4, CNum+1) 
+        cell99 = geocell.cell(I99, CNum+2) 
+
         CList.append(geocell.mcnpcard(cell3, 0))
         CList.append(geocell.mcnpcard(cell4, Hous_Mat, Hous_Ro))
         CList.append(geocell.mcnpcard(cell99, 0))
