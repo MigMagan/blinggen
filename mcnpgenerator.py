@@ -444,10 +444,14 @@ def createTR (Comp, N):
     return TRcard
 
 
-def createreflecards(Comp, N, RFLAG=2):
+def createreflecards(Comp, N, RFLAG=2, length=None):
     """Write the reflection cards for Comp, number N, with RFLAGS"""
     cards = ["C =============== Section {0}================".format(N)]
-    celln = 100*N
+    if length == None:
+        celln = -100*N  # Notice this variable is declared negative
+    else:
+        nsegs = math.ceil(100*Comp.l // length)
+        celln = " ".join([str(-100*N),str(nsegs-2)+"i", str(-100*N-nsegs+1)])
     if hasattr(Comp, "m"):
         m = [Comp.m]*4
     else:
@@ -460,7 +464,7 @@ def createreflecards(Comp, N, RFLAG=2):
         cardn = 100*N + i
         surfn = 100*N + 10*i
         mn = int(10*m[i-1])  # Notice that m should not have more than 1 decimal
-        cards.append("REFLE{0} {1} {2} -{3}".format(cardn, surfn, mn, celln))
+        cards.append("REFLE{0} {1} {2} {3}".format(cardn, surfn, mn, celln))
         cards.append("RFLAG{0} {1}".format(cardn, RFLAG))
     return cards
 
