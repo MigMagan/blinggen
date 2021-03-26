@@ -168,6 +168,19 @@ def doBinOp(Node, varlib=None):
     result = operator[Node.op](doBinOp(Node.left, varlib), doBinOp(Node.right, varlib))
     return result
 
+def getvar(var, varlib=None):
+    "get an initalized variable from a node var, and return its key and value"
+    if var.init is None:
+        return None
+    if isinstance(var.init, pycparser.c_ast.UnaryOp):  # negative constant?
+        return var.name, getconstval(var.children()[1][1].expr)
+    if isinstance(var.init, pycparser.c_ast.Constant):  # constant?
+        return var.name, getconstval(var.children()[1][1])
+    if isinstance(var.init, pycparser.c_ast.InitList):  # array
+        return var.name, getarraynode(var)
+    elif isinstance(var.init, pycparser.c_ast.BinaryOp):
+        return var.name, doBinOp(var.init, varlib)
+
 def getconstval(Node, varlib=None):
     """Get constant value from a Constant, ID or UnaryOpo (sub)node. 
     ID nodes need a varlib to refer"""
@@ -192,6 +205,12 @@ def getfuncvars(Node, varlib=None):
     """Get variables declared or initialized in child node of function
     Only works with = assignments for now, probably very limited and
     will need expanding"""
+    if isinstance(Node[1], pycparser.c_ast.Decl):
+        if hasattr(Node[1],"init"):
+            if Node[1].init == None:
+                return None, None
+            else:
+                return getvar(Node[1], varlib)
     if Node[1].op != "=":
         print("Operation not implemented")
         return None
@@ -216,14 +235,8 @@ def getvariables(infile):
             variables.append(ele)
     varlib = {}
     for var in variables:  # First loop over declared
-        if var.init is None:
-            continue
-        if isinstance(var.init, pycparser.c_ast.UnaryOp):  # negative constant?
-            varlib[var.name] = getconstval(var.children()[1][1].expr)
-        if isinstance(var.init, pycparser.c_ast.Constant):  # constant?
-            varlib[var.name] = getconstval(var.children()[1][1])
-        if isinstance(var.init, pycparser.c_ast.InitList):  # array
-            varlib[var.name] = getarraynode(var)
+        if getvar(var) is not None:
+            varlib[getvar(var)[0]] = getvar(var)[1]
         
     for var in ast.ext:  # Now loop over all ext
         if isinstance(var, pycparser.c_ast.FuncDef): # function
@@ -235,14 +248,16 @@ def getvariables(infile):
 def getarraynodedim(Node):
     """ Get the array dimensions from a node. Called recursively"""
     
-    if hasattr(Node.children()[0][1], 'dim'):
-        a = int(Node.children()[0][1].dim.value)
+    if hasattr(Node.children()[0][1], 'dim'): 
+        if Node.children()[0][1].dim is not None:
+            a = int(Node.children()[0][1].dim.value)
+        else:
+            a = len(Node.children()[1][1].exprs)
         b = getarraynodedim(Node.children()[0][1])      
         b.append(a)
         return b
     else:
         return []
-    
 
 def getarraynode(Node):
     """ Get the array values from a node. Arrays are assumed to be numerical 
